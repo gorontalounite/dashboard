@@ -1,0 +1,83 @@
+/* src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-orange: #f97316;
+  --brand-amber: #f59e0b;
+  --brand-pink: #ec4899;
+  --surface: #111118;
+  --surface-2: #1a1a24;
+  --surface-3: #22222f;
+  --border: rgba(255,255,255,0.08);
+  --text-muted: rgba(255,255,255,0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #0a0a0f;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+
+/* Glass card */
+.glass {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+}
+
+/* Stat card glow */
+.card-glow-orange {
+  box-shadow: 0 0 40px rgba(249,115,22,0.08);
+}
+.card-glow-pink {
+  box-shadow: 0 0 40px rgba(236,72,153,0.08);
+}
+.card-glow-blue {
+  box-shadow: 0 0 40px rgba(99,102,241,0.08);
+}
+
+/* Input */
+.input-dark {
+  @apply bg-[#1a1a24] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm w-full;
+  @apply focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20;
+  @apply placeholder:text-white/30 transition-all duration-200;
+}
+
+.label-dark {
+  @apply block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider;
+}
+
+/* Animated gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #f97316, #ec4899, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Noise texture overlay */
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+}

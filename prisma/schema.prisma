@@ -1,0 +1,124 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          Role      @default(ADMIN)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reports       Report[]
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+model Report {
+  id            String    @id @default(cuid())
+  title         String
+  accountName   String
+  periodStart   DateTime
+  periodEnd     DateTime
+  shareToken    String    @unique @default(cuid())
+  isPublic      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     User      @relation(fields: [userId], references: [id])
+  userId        String
+  metrics       Metrics?
+  contentStats  ContentStat[]
+  topContent    TopContent[]
+  audienceData  AudienceData?
+}
+
+model Metrics {
+  id              String   @id @default(cuid())
+  reportId        String   @unique
+  report          Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  views           Int      @default(0)
+  viewsFromAds    Float    @default(0)
+  viewsFollowers  Float    @default(0)
+  viewsNonFollowers Float  @default(0)
+  accountsReached Int      @default(0)
+  accountsReachedChange Float @default(0)
+  interactions    Int      @default(0)
+  interactionsFromAds Float @default(0)
+  interactionsFollowers Float @default(0)
+  interactionsNonFollowers Float @default(0)
+  likes           Int      @default(0)
+  comments        Int      @default(0)
+  saves           Int      @default(0)
+  shares          Int      @default(0)
+  reposts         Int      @default(0)
+  profileVisits   Int      @default(0)
+  profileVisitsChange Float @default(0)
+  externalLinkTaps Int     @default(0)
+  externalLinkTapsChange Float @default(0)
+  followsGained   Int      @default(0)
+  unfollows       Int      @default(0)
+  netFollowerGrowth Int    @default(0)
+}
+
+model ContentStat {
+  id         String   @id @default(cuid())
+  reportId   String
+  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  type       ContentType
+  viewsPct   Float    @default(0)
+  interactionsPct Float @default(0)
+}
+
+enum ContentType {
+  REELS
+  STORIES
+  POSTS
+  VIDEOS
+}
+
+model TopContent {
+  id         String   @id @default(cuid())
+  reportId   String
+  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  type       ContentType
+  views      Int      @default(0)
+  publishedAt DateTime?
+  caption    String?
+  rank       Int      @default(0)
+}
+
+model AudienceData {
+  id          String   @id @default(cuid())
+  reportId    String   @unique
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  genderMen   Float    @default(0)
+  genderWomen Float    @default(0)
+  age13to17   Float    @default(0)
+  age18to24   Float    @default(0)
+  age25to34   Float    @default(0)
+  age35to44   Float    @default(0)
+  age45to54   Float    @default(0)
+  age55to64   Float    @default(0)
+  age65plus   Float    @default(0)
+  topCity1    String?
+  topCity1Pct Float    @default(0)
+  topCity2    String?
+  topCity2Pct Float    @default(0)
+  topCity3    String?
+  topCity3Pct Float    @default(0)
+  topCity4    String?
+  topCity4Pct Float    @default(0)
+  topCity5    String?
+  topCity5Pct Float    @default(0)
+}
