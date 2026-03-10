@@ -35,11 +35,14 @@ function useChartColors() {
   };
 }
 
+type ChartColors = ReturnType<typeof useChartColors>;
+
 function CustomTooltip({ active, payload, label, colors }: {
   active?: boolean;
-  payload?: Array<{ name: string; value: number }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
   label?: string;
-  colors: ReturnType<typeof useChartColors>;
+  colors: ChartColors;
 }) {
   if (active && payload && payload.length) {
     return (
