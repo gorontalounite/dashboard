@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -44,26 +45,22 @@ const navItems = [
   },
 ];
 
-export function Sidebar() {
+function SidebarContent({
+  onClose,
+  showClose,
+}: {
+  onClose: () => void;
+  showClose: boolean;
+}) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(true);
 
-  // Close drawer on route change
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    setMounted(true);
+  }, []);
 
-  // Prevent body scroll when drawer open
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
-
-  const SidebarContent = () => (
+  return (
     <aside className="h-full w-64 bg-[#0d0d15] border-r border-white/5 flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-white/5">
@@ -79,15 +76,16 @@ export function Sidebar() {
               <p className="text-[10px] text-white/30 mt-0.5">Dashboard</p>
             </div>
           </div>
-          {/* Close button - mobile only */}
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="lg:hidden text-white/40 hover:text-white/80 transition-colors p-1"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {showClose && (
+            <button
+              onClick={onClose}
+              className="text-white/40 hover:text-white/80 transition-colors p-1"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -118,7 +116,32 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-white/5 space-y-1">
+        {/* Theme toggle - only render after mount to avoid hydration mismatch */}
+        {mounted && (
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all w-full"
+          >
+            {theme === "dark" ? (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 6.343l-.707-.707m12.728 12.728l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Light Mode
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                Dark Mode
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Logout */}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all w-full"
@@ -131,38 +154,47 @@ export function Sidebar() {
       </div>
     </aside>
   );
+}
+
+export function Sidebar() {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   return (
     <>
-      {/* Desktop sidebar - fixed */}
+      {/* Desktop sidebar */}
       <div className="hidden lg:block fixed left-0 top-0 h-full z-50">
-        <SidebarContent />
+        <SidebarContent onClose={() => {}} showClose={false} />
       </div>
 
-      {/* Mobile hamburger button */}
+      {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-9 h-9 bg-[#0d0d15] border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:text-white transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 w-9 h-9 bg-[#0d0d15] dark:bg-[#0d0d15] light:bg-white border border-white/10 rounded-lg flex items-center justify-center text-white/60 dark:text-white/60 hover:text-white transition-colors shadow-md"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
-      {/* Mobile drawer overlay */}
+      {/* Mobile drawer */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 z-50 flex"
           onClick={() => setMobileOpen(false)}
         >
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          {/* Drawer */}
-          <div
-            className="relative z-10 h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SidebarContent />
+          <div className="relative z-10 h-full" onClick={(e) => e.stopPropagation()}>
+            <SidebarContent onClose={() => setMobileOpen(false)} showClose={true} />
           </div>
         </div>
       )}

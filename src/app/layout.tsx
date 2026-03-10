@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${inter.variable} ${plusJakarta.variable}`}>
+    <html lang="id" className={`${inter.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
       <body className="bg-[#0a0a0f] text-white antialiased">
         <Providers>{children}</Providers>
       </body>

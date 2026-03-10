@@ -81,3 +81,76 @@ body {
   pointer-events: none;
   border-radius: inherit;
 }
+/* Light mode */
+.light {
+  --bg-primary: #f8f8fc;
+  --bg-secondary: #ffffff;
+  --bg-surface: #f0f0f8;
+  --text-primary: #0a0a0f;
+  --text-muted: rgba(0,0,0,0.45);
+  --border-color: rgba(0,0,0,0.08);
+}
+
+.light body {
+  background: #f8f8fc;
+  color: #0a0a0f;
+}
+
+.light .glass {
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(0,0,0,0.08);
+  backdrop-filter: blur(12px);
+}
+
+.light aside {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.06) !important;
+}
+
+.light aside p {
+  color: #0a0a0f;
+}
+
+.light aside .text-white\/30,
+.light aside .text-white\/40,
+.light aside .text-white\/50 {
+  color: rgba(0,0,0,0.4) !important;
+}
+
+.light main {
+  background: #f8f8fc !important;
+}
+
+.light .text-white {
+  color: #0a0a0f !important;
+}
+
+.light .text-white\/40,
+.light .text-white\/30,
+.light .text-white\/50 {
+  color: rgba(0,0,0,0.45) !important;
+}
+
+.light .bg-\[\#0a0a0f\] {
+  background: #f8f8fc !important;
+}
+
+.light .bg-\[\#0d0d15\] {
+  background: #ffffff !important;
+}
+/* Hamburger button light mode */
+.light .lg\:hidden.fixed {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.12) !important;
+  color: rgba(0,0,0,0.6) !important;
+}
+
+.light .border-white\/5,
+.light .border-white\/10 {
+  border-color: rgba(0,0,0,0.07) !important;
+}
+
+.light .bg-white\/3,
+.light .hover\:bg-white\/6:hover {
+  background: rgba(0,0,0,0.03) !important;
+}
