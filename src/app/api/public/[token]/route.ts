@@ -1,13 +1,14 @@
-// src/app/api/public/[token]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
+  const { token } = await params;
+  
   const report = await prisma.report.findUnique({
-    where: { shareToken: params.token },
+    where: { shareToken: token },
     include: {
       metrics: true,
       contentStats: true,
