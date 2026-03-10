@@ -1,4 +1,3 @@
-// src/app/dashboard/layout.tsx
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -15,8 +14,8 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 ml-64 min-h-screen bg-[#0a0a0f]">
-        <div className="p-8">{children}</div>
+      <main className="flex-1 lg:ml-64 min-h-screen bg-[#0a0a0f]">
+        <div className="p-4 pt-16 lg:pt-8 lg:p-8">{children}</div>
       </main>
     </div>
   );

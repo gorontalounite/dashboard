@@ -30,7 +30,7 @@ export default async function DashboardPage() {
         <p className="text-white/40 mt-1">Berikut ringkasan semua insight yang telah diinput.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
           { label: "Total Reports", val: totalReports },
           { label: "Total Views (all)", val: totalViews },
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
         <Link href="/dashboard/input" className="glass rounded-2xl p-5 hover:bg-white/5 transition-all group">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
