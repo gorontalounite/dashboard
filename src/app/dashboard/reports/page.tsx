@@ -121,6 +121,14 @@ export default function ReportsPage() {
                   </button>
                 )}
 
+                {/* Edit */}
+<Link
+  href={`/dashboard/reports/${report.id}/edit`}
+  className="text-xs px-3 py-1.5 rounded-lg border bg-blue-500/5 border-blue-500/10 text-blue-400/60 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+>
+  Edit
+</Link>
+
                 {/* View */}
                 <Link
                   href={`/dashboard/reports/${report.id}`}

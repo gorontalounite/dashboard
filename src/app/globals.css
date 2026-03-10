@@ -154,3 +154,40 @@ body {
 .light .hover\:bg-white\/6:hover {
   background: rgba(0,0,0,0.03) !important;
 }
+/* Light mode - input & label */
+.light .input-dark {
+  background: #f0f0f8 !important;
+  border-color: rgba(0,0,0,0.12) !important;
+  color: #0a0a0f !important;
+}
+
+.light .input-dark::placeholder {
+  color: rgba(0,0,0,0.3) !important;
+}
+
+.light .label-dark {
+  color: rgba(0,0,0,0.5) !important;
+}
+
+/* Light mode - table */
+.light table td,
+.light table th {
+  color: rgba(0,0,0,0.6) !important;
+  border-color: rgba(0,0,0,0.05) !important;
+}
+
+.light table td.text-white,
+.light table th.text-white {
+  color: #0a0a0f !important;
+}
+
+/* Light mode - select dropdown */
+.light select.input-dark {
+  background: #f0f0f8 !important;
+  color: #0a0a0f !important;
+}
+
+/* Light mode - compare page buttons */
+.light .border-white\/10.bg-white\/3 p {
+  color: #0a0a0f !important;
+}

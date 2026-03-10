@@ -4,6 +4,8 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import type { ReportWithData } from "@/types";
 import { formatNumber } from "@/lib/utils";
 
@@ -14,17 +16,38 @@ interface Props {
   report: ReportWithData;
 }
 
-const CustomTooltip = ({ active, payload, label }: {
+function useChartColors() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const isDark = !mounted || resolvedTheme === "dark";
+
+  return {
+    labelColor: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+    subtleLabelColor: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)",
+    legendColor: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)",
+    tooltipBg: isDark ? "#1a1a24" : "#ffffff",
+    tooltipBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+    tooltipText: isDark ? "#ffffff" : "#111111",
+    tooltipMuted: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+    cursorFill: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
+  };
+}
+
+function CustomTooltip({ active, payload, label, colors }: {
   active?: boolean;
   payload?: Array<{ name: string; value: number }>;
   label?: string;
-}) => {
+  colors: ReturnType<typeof useChartColors>;
+}) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 shadow-xl">
-        {label && <p className="text-white/50 text-xs mb-1">{label}</p>}
+      <div style={{ background: colors.tooltipBg, border: `1px solid ${colors.tooltipBorder}` }}
+        className="rounded-xl px-4 py-3 shadow-xl">
+        {label && <p style={{ color: colors.tooltipMuted }} className="text-xs mb-1">{label}</p>}
         {payload.map((p, i) => (
-          <p key={i} className="text-white text-sm font-semibold">
+          <p key={i} style={{ color: colors.tooltipText }} className="text-sm font-semibold">
             {p.name}: {typeof p.value === "number" && p.value > 100 ? formatNumber(p.value) : `${p.value}%`}
           </p>
         ))}
@@ -32,9 +55,10 @@ const CustomTooltip = ({ active, payload, label }: {
     );
   }
   return null;
-};
+}
 
 export function ContentTypeChart({ report }: Props) {
+  const colors = useChartColors();
   const data = report.contentStats.map((cs) => ({
     name: cs.type.charAt(0) + cs.type.slice(1).toLowerCase(),
     value: cs.viewsPct,
@@ -51,9 +75,9 @@ export function ContentTypeChart({ report }: Props) {
               <Cell key={index} fill={COLORS_CONTENT[index % COLORS_CONTENT.length]} stroke="transparent" />
             ))}
           </Pie>
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={(props) => <CustomTooltip {...props} colors={colors} />} />
           <Legend
-            formatter={(value) => <span className="text-white/60 text-xs">{value}</span>}
+            formatter={(value) => <span style={{ color: colors.legendColor }} className="text-xs">{value}</span>}
             iconType="circle"
             iconSize={8}
           />
@@ -64,14 +88,15 @@ export function ContentTypeChart({ report }: Props) {
 }
 
 export function InteractionChart({ report }: Props) {
+  const colors = useChartColors();
   const m = report.metrics;
   if (!m) return null;
 
   const data = [
     { name: "Likes", value: m.likes },
+    { name: "Reposts", value: m.reposts },
     { name: "Shares", value: m.shares },
     { name: "Saves", value: m.saves },
-    { name: "Reposts", value: m.reposts },
     { name: "Comments", value: m.comments },
   ].sort((a, b) => b.value - a.value);
 
@@ -81,9 +106,9 @@ export function InteractionChart({ report }: Props) {
       <p className="text-white/40 text-xs mb-6">Reels interactions</p>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20 }}>
-          <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }} axisLine={false} tickLine={false} width={70} />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+          <XAxis type="number" tick={{ fill: colors.subtleLabelColor, fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fill: colors.labelColor, fontSize: 12 }} axisLine={false} tickLine={false} width={70} />
+          <Tooltip content={(props) => <CustomTooltip {...props} colors={colors} />} cursor={{ fill: colors.cursorFill }} />
           <Bar dataKey="value" fill="#f97316" radius={[0, 6, 6, 0]} name="Jumlah" />
         </BarChart>
       </ResponsiveContainer>
@@ -92,6 +117,7 @@ export function InteractionChart({ report }: Props) {
 }
 
 export function AudienceAgeChart({ report }: Props) {
+  const colors = useChartColors();
   const a = report.audienceData;
   if (!a) return null;
 
@@ -111,9 +137,9 @@ export function AudienceAgeChart({ report }: Props) {
       <p className="text-white/40 text-xs mb-6">Distribusi usia audiens</p>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ bottom: 0 }}>
-          <XAxis dataKey="age" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} unit="%" />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+          <XAxis dataKey="age" tick={{ fill: colors.labelColor, fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: colors.subtleLabelColor, fontSize: 11 }} axisLine={false} tickLine={false} unit="%" />
+          <Tooltip content={(props) => <CustomTooltip {...props} colors={colors} />} cursor={{ fill: colors.cursorFill }} />
           <Bar dataKey="pct" name="%" fill="#6366f1" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
@@ -122,6 +148,7 @@ export function AudienceAgeChart({ report }: Props) {
 }
 
 export function GenderChart({ report }: Props) {
+  const colors = useChartColors();
   const a = report.audienceData;
   if (!a) return null;
 
@@ -141,9 +168,9 @@ export function GenderChart({ report }: Props) {
               <Cell key={index} fill={COLORS_GENDER[index]} stroke="transparent" />
             ))}
           </Pie>
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={(props) => <CustomTooltip {...props} colors={colors} />} />
           <Legend
-            formatter={(value) => <span className="text-white/60 text-xs">{value}</span>}
+            formatter={(value) => <span style={{ color: colors.legendColor }} className="text-xs">{value}</span>}
             iconType="circle"
             iconSize={8}
           />
