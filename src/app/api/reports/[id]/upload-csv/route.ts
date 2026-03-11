@@ -148,31 +148,31 @@ export async function POST(
       const postRows: PostRow[] = [];
 
       const idx = {
-        postId: headers.findIndex((h) => h.toLowerCase().includes("post id")),
-        username: headers.findIndex((h) => h.toLowerCase().includes("username")),
-        description: headers.findIndex((h) => h.toLowerCase().includes("description")),
-        duration: headers.findIndex((h) => h.toLowerCase().includes("duration")),
-        publishTime: headers.findIndex((h) => h.toLowerCase().includes("publish time")),
-        permalink: headers.findIndex((h) => h.toLowerCase().includes("permalink")),
-        postType: headers.findIndex((h) => h.toLowerCase().includes("post type")),
-        date: headers.findIndex((h) => h.toLowerCase() === "date"),
-        views: headers.findIndex((h) => h.toLowerCase() === "views"),
-        reach: headers.findIndex((h) => h.toLowerCase() === "reach"),
-        likes: headers.findIndex((h) => h.toLowerCase() === "likes"),
-        shares: headers.findIndex((h) => h.toLowerCase() === "shares"),
-        follows: headers.findIndex((h) => h.toLowerCase() === "follows"),
-        comments: headers.findIndex((h) => h.toLowerCase() === "comments"),
-        saves: headers.findIndex((h) => h.toLowerCase() === "saves"),
-      };
+  postId: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("post id")),
+  username: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("account username")),
+  description: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("description")),
+  duration: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("duration")),
+  publishTime: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("publish time")),
+  permalink: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("permalink")),
+  postType: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("post type")),
+  date: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "date"),
+  views: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "views"),
+  reach: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "reach"),
+  likes: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "likes"),
+  shares: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "shares"),
+  follows: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "follows"),
+  comments: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "comments"),
+  saves: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "saves"),
+};
 
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVLine(lines[i]);
         if (cols.length < 8) continue;
 
         const dateVal = idx.date >= 0 ? cols[idx.date] : "";
-        if (dateVal !== "Lifetime") continue;
+        if (dateVal.replace(/"/g, "").trim() !== "Lifetime") continue;
 
-        const username = idx.username >= 0 ? cols[idx.username] : "";
+        const username = idx.username >= 0 ? cols[idx.username].replace(/"/g, "").trim() : "";
         if (username && username !== "gorontalo.unite") continue;
 
         const permalink = idx.permalink >= 0 ? cols[idx.permalink] : "";
