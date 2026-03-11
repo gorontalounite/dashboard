@@ -1,4 +1,3 @@
-// src/app/report/[token]/page.tsx
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ReportView } from "@/components/ReportView";
@@ -7,15 +6,18 @@ import type { ReportWithData } from "@/types";
 export default async function PublicReportPage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
+  const { token } = await params;
   const report = await prisma.report.findUnique({
-    where: { shareToken: params.token },
+    where: { shareToken: token },
     include: {
       metrics: true,
       contentStats: true,
       topContent: { orderBy: { rank: "asc" } },
       audienceData: true,
+      dailyMetrics: { orderBy: { date: "asc" } },
+      postInsights: { orderBy: { publishedAt: "desc" } },
     },
   });
 
@@ -30,6 +32,14 @@ export default async function PublicReportPage({
     topContent: report.topContent.map((tc) => ({
       ...tc,
       publishedAt: tc.publishedAt ? tc.publishedAt.toISOString() : null,
+    })),
+    dailyMetrics: report.dailyMetrics.map((d) => ({
+      ...d,
+      date: d.date.toISOString(),
+    })),
+    postInsights: report.postInsights.map((p) => ({
+      ...p,
+      publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
     })),
   };
 

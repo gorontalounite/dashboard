@@ -94,6 +94,8 @@ export interface ReportWithData {
   contentStats: ContentStatData[];
   topContent: TopContentData[];
   audienceData: AudienceDataType | null;
+  dailyMetrics: DailyMetricData[];
+  postInsights: PostInsightData[];
 }
 
 export interface ReportListItem {
@@ -181,4 +183,33 @@ export interface InputFormData {
   topCity4Pct: string;
   topCity5: string;
   topCity5Pct: string;
+}
+export interface DailyMetricData {
+  id: string;
+  reportId: string;
+  date: string;
+  views: number;
+  reach: number;
+  interactions: number;
+  follows: number;
+  profileVisits: number;
+  linkClicks: number;
+}
+
+export interface PostInsightData {
+  id: string;
+  reportId: string;
+  postId: string | null;
+  permalink: string | null;
+  caption: string | null;
+  type: ContentType;
+  publishedAt: string | null;
+  views: number;
+  reach: number;
+  likes: number;
+  comments: number;
+  saves: number;
+  shares: number;
+  follows: number;
+  duration: number;
 }

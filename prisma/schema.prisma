@@ -41,6 +41,8 @@ model Report {
   contentStats  ContentStat[]
   topContent    TopContent[]
   audienceData  AudienceData?
+  dailyMetrics  DailyMetric[]
+  postInsights  PostInsight[]
 }
 
 model Metrics {
@@ -121,4 +123,38 @@ model AudienceData {
   topCity4Pct Float    @default(0)
   topCity5    String?
   topCity5Pct Float    @default(0)
+}
+
+model DailyMetric {
+  id            String   @id @default(cuid())
+  reportId      String
+  report        Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  date          DateTime
+  views         Int      @default(0)
+  reach         Int      @default(0)
+  interactions  Int      @default(0)
+  follows       Int      @default(0)
+  profileVisits Int      @default(0)
+  linkClicks    Int      @default(0)
+
+  @@unique([reportId, date])
+}
+
+model PostInsight {
+  id          String      @id @default(cuid())
+  reportId    String
+  report      Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  postId      String?
+  permalink   String?
+  caption     String?
+  type        ContentType @default(REELS)
+  publishedAt DateTime?
+  views       Int         @default(0)
+  reach       Int         @default(0)
+  likes       Int         @default(0)
+  comments    Int         @default(0)
+  saves       Int         @default(0)
+  shares      Int         @default(0)
+  follows     Int         @default(0)
+  duration    Int         @default(0)
 }

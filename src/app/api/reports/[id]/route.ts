@@ -8,6 +8,8 @@ const includeAll = {
   contentStats: true,
   topContent: { orderBy: { rank: "asc" as const } },
   audienceData: true,
+  dailyMetrics: { orderBy: { date: "asc" as const } },
+  postInsights: { orderBy: { publishedAt: "desc" as const } },
 };
 
 export async function GET(

@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatNumber, formatDate } from "@/lib/utils";
+import { DailyChart } from "@/components/DailyChart";
+import { PostInsightList } from "@/components/PostInsightList";
+import type { DailyMetricData, PostInsightData } from "@/types";
 
 type Report = {
   id: string;
@@ -17,6 +20,19 @@ type Report = {
   } | null;
 };
 
+type MonthOption = {
+  id: string;
+  title: string;
+  periodStart: string;
+  periodEnd: string;
+};
+
+type SelectedReportData = {
+  report: { id: string; title: string; periodStart: string; periodEnd: string } | null;
+  dailyMetrics: DailyMetricData[];
+  postInsights: PostInsightData[];
+} | null;
+
 type Props = {
   reports: Report[];
   totalReports: number;
@@ -25,6 +41,9 @@ type Props = {
   totalReached: number;
   currentFilter: string;
   userName: string;
+  allReports: MonthOption[];
+  selectedMonth: string | null;
+  selectedReportData: SelectedReportData;
 };
 
 const FILTERS = [
@@ -43,6 +62,9 @@ export function OverviewClient({
   totalReached,
   currentFilter,
   userName,
+  allReports,
+  selectedMonth,
+  selectedReportData,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,8 +72,22 @@ export function OverviewClient({
   const handleFilter = (val: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("period", val);
+    params.delete("month");
     router.push(`/dashboard?${params.toString()}`);
   };
+
+  const handleMonthSelect = (val: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (val === "") {
+      params.delete("month");
+    } else {
+      params.set("month", val);
+    }
+    router.push(`/dashboard?${params.toString()}`);
+  };
+
+  const hasDailyData = (selectedReportData?.dailyMetrics?.length ?? 0) > 0;
+  const hasPostData = (selectedReportData?.postInsights?.length ?? 0) > 0;
 
   return (
     <div>
@@ -63,7 +99,7 @@ export function OverviewClient({
         <p className="text-white/40 mt-1">Berikut ringkasan insight yang telah diinput.</p>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Filter row */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         <span className="text-white/30 text-xs uppercase tracking-wider mr-1">Periode:</span>
         {FILTERS.map((f) => (
@@ -79,6 +115,24 @@ export function OverviewClient({
             {f.label}
           </button>
         ))}
+
+        {allReports.length > 0 && (
+          <>
+            <span className="text-white/20 mx-1">|</span>
+            <select
+              value={selectedMonth ?? ""}
+              onChange={(e) => handleMonthSelect(e.target.value)}
+              className="text-sm bg-white/5 border border-white/10 text-white/70 rounded-full px-4 py-1.5 focus:outline-none focus:border-orange-500/50"
+            >
+              <option value="">📅 Pilih Bulan</option>
+              {allReports.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.title} ({new Date(r.periodStart).toLocaleDateString("id-ID", { month: "short", year: "numeric" })})
+                </option>
+              ))}
+            </select>
+          </>
+        )}
       </div>
 
       {/* Stat Cards */}
@@ -99,6 +153,56 @@ export function OverviewClient({
         ))}
       </div>
 
+      {/* Selected month detail */}
+      {selectedMonth && selectedReportData?.report && (
+        <div className="mb-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-display font-semibold text-white text-lg">
+                {selectedReportData.report.title}
+              </h2>
+              <p className="text-white/40 text-xs mt-0.5">
+                {formatDate(selectedReportData.report.periodStart)} – {formatDate(selectedReportData.report.periodEnd)}
+              </p>
+            </div>
+            <Link
+              href={`/dashboard/reports/${selectedReportData.report.id}`}
+              className="text-orange-400 text-sm hover:text-orange-300 transition-colors"
+            >
+              Lihat Detail →
+            </Link>
+          </div>
+
+          {hasDailyData ? (
+            <DailyChart dailyMetrics={selectedReportData.dailyMetrics} />
+          ) : (
+            <div className="glass rounded-2xl p-8 text-center">
+              <p className="text-white/30 text-sm">Belum ada data harian untuk periode ini.</p>
+              <Link
+                href={`/dashboard/reports/${selectedReportData.report.id}/edit`}
+                className="inline-block mt-3 text-orange-400 text-xs hover:text-orange-300"
+              >
+                Upload CSV di halaman Edit →
+              </Link>
+            </div>
+          )}
+
+          {hasPostData ? (
+            <PostInsightList posts={selectedReportData.postInsights as PostInsightData[]} />
+          ) : (
+            <div className="glass rounded-2xl p-8 text-center">
+              <p className="text-white/30 text-sm">Belum ada data per postingan untuk periode ini.</p>
+              <Link
+                href={`/dashboard/reports/${selectedReportData.report.id}/edit`}
+                className="inline-block mt-3 text-orange-400 text-xs hover:text-orange-300"
+              >
+                Upload CSV di halaman Edit →
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Report List */}
       <div className="glass rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
@@ -110,19 +214,14 @@ export function OverviewClient({
               </span>
             )}
           </h2>
-          <Link
-            href="/dashboard/reports"
-            className="text-orange-400 text-sm hover:text-orange-300 transition-colors"
-          >
+          <Link href="/dashboard/reports" className="text-orange-400 text-sm hover:text-orange-300 transition-colors">
             Lihat semua →
           </Link>
         </div>
 
         {reports.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-white/30 text-sm">
-              Tidak ada report dalam periode ini.
-            </p>
+            <p className="text-white/30 text-sm">Tidak ada report dalam periode ini.</p>
             <Link
               href="/dashboard/input"
               className="inline-block mt-4 bg-orange-500/10 text-orange-400 border border-orange-500/20 px-4 py-2 rounded-xl text-sm hover:bg-orange-500/20 transition-all"

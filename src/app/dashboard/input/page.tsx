@@ -2,6 +2,7 @@
 "use client";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { UploadCSV } from "@/components/UploadCSV";
 import type { InputFormData, ContentType } from "@/types";
 
 const defaultForm: InputFormData = {
@@ -316,7 +317,14 @@ export default function InputPage() {
             ))}
           </div>
         </div>
-
+{/* Upload CSV */}
+<div className="glass rounded-2xl p-6">
+  <div className="border-b border-white/5 pb-4 mb-4">
+    <h2 className="font-display text-base font-semibold text-white">Upload Data CSV <span className="text-white/30 text-xs font-normal ml-2">(opsional)</span></h2>
+    <p className="text-white/40 text-xs mt-0.5">Upload setelah report tersimpan untuk menambah data harian & per postingan.</p>
+  </div>
+  <p className="text-white/30 text-xs">Simpan report terlebih dahulu, lalu upload CSV dari halaman Edit atau Reports.</p>
+</div>
         {error && (
           <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             {error}

@@ -31,6 +31,8 @@ export default async function ReportDetailPage({
       ...tc,
       publishedAt: tc.publishedAt ? tc.publishedAt.toISOString() : null,
     })),
+    dailyMetrics: [],
+    postInsights: [],
   };
 
   return <ReportView report={serialized} />;
