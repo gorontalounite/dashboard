@@ -49,11 +49,44 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-function detectCSVType(headers: string[]): "posts" | "daily" | "unknown" {
-  const headerStr = headers.join(",").toLowerCase();
-  if (headerStr.includes("post id") || headerStr.includes("permalink")) return "posts";
-  if (headerStr.includes("tayangan") || headerStr.includes("tanggal") || headerStr.includes("primary")) return "daily";
-  if (headerStr.includes("date") && headerStr.includes("primary")) return "daily";
+function decodeFile(buffer: ArrayBuffer): string {
+  const uint8 = new Uint8Array(buffer);
+  if (
+    (uint8[0] === 0xff && uint8[1] === 0xfe) ||
+    (uint8[0] === 0xfe && uint8[1] === 0xff)
+  ) {
+    return new TextDecoder("utf-16").decode(buffer);
+  }
+  return new TextDecoder("utf-8").decode(buffer).replace(/^\uFEFF/, "");
+}
+
+function getLines(text: string): string[] {
+  const all = text.split("\n").map((l) => l.trim()).filter((l) => l);
+  if (all[0]?.toLowerCase() === "sep=,") return all.slice(1);
+  return all;
+}
+
+type CSVType = "posts" | "daily" | "audience" | "unknown";
+
+function detectType(lines: string[]): CSVType {
+  const first = parseCSVLine(lines[0]).join(",").toLowerCase();
+  if (first.includes("post id") || first.includes("permalink")) return "posts";
+  if (first.includes("age & gender") || first.includes("age &amp; gender")) return "audience";
+  if (
+    first.includes("tayangan") ||
+    first.includes("content interactions") ||
+    first.includes("instagram follows") ||
+    first.includes("instagram profile visits") ||
+    first.includes("instagram link clicks") ||
+    first.includes("reach")
+  ) return "daily";
+  if (lines[1]) {
+    const second = parseCSVLine(lines[1]).join(",").toLowerCase();
+    if (
+      (second.includes("primary") && second.includes("date")) ||
+      (second.includes("primary") && second.includes("tanggal"))
+    ) return "daily";
+  }
   return "unknown";
 }
 
@@ -63,6 +96,17 @@ function mapPostType(type: string): "REELS" | "STORIES" | "POSTS" | "VIDEOS" {
   if (t.includes("stor")) return "STORIES";
   if (t.includes("video")) return "VIDEOS";
   return "POSTS";
+}
+
+function getMetricKey(filename: string, metricName: string): keyof Omit<DailyRow, "date"> {
+  const f = filename.toLowerCase();
+  const m = metricName.toLowerCase();
+  if (f.includes("reach") || m.includes("reach")) return "reach";
+  if (f.includes("interaction") || f.includes("interaksi") || m.includes("interaction")) return "interactions";
+  if (f.includes("follow") || m.includes("follow")) return "follows";
+  if (f.includes("visit") || f.includes("profile") || m.includes("profile visits")) return "profileVisits";
+  if (f.includes("link") || f.includes("click") || m.includes("link click")) return "linkClicks";
+  return "views";
 }
 
 export async function POST(
@@ -76,7 +120,6 @@ export async function POST(
 
   const { id: reportId } = await params;
 
-  // Verify report exists
   const report = await prisma.report.findUnique({ where: { id: reportId } });
   if (!report) {
     return NextResponse.json({ error: "Report not found" }, { status: 404 });
@@ -89,62 +132,48 @@ export async function POST(
     return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
   }
 
-  const results = { posts: 0, daily: 0, errors: [] as string[] };
+  const results = { posts: 0, daily: 0, audience: false, errors: [] as string[] };
 
   for (const file of files) {
-    // Handle both UTF-8 and UTF-16 encodings
-const buffer = await file.arrayBuffer();
-const uint8 = new Uint8Array(buffer);
-
-// Detect UTF-16 by BOM (FF FE or FE FF)
-let cleanText: string;
-if ((uint8[0] === 0xff && uint8[1] === 0xfe) || (uint8[0] === 0xfe && uint8[1] === 0xff)) {
-  const decoder = new TextDecoder("utf-16");
-  cleanText = decoder.decode(buffer);
-} else {
-  const decoder = new TextDecoder("utf-8");
-  cleanText = decoder.decode(buffer).replace(/^\uFEFF/, "");
-}
-
-// Remove sep=, line if present (Business Suite adds this)
-const lines_raw = cleanText.split("\n").filter((l) => l.trim());
-const firstLine = lines_raw[0]?.trim().toLowerCase();
-const csvLines = firstLine === "sep=," ? lines_raw.slice(1) : lines_raw;
-    const lines = csvLines;
+    const buffer = await file.arrayBuffer();
+    const text = decodeFile(buffer);
+    const lines = getLines(text);
     if (lines.length < 2) continue;
 
-    const headers = parseCSVLine(lines[0]);
-    const csvType = detectCSVType(headers);
+    const csvType = detectType(lines);
 
+    // ── POSTS ──────────────────────────────────────────────────
     if (csvType === "posts") {
-      // Parse post insights CSV
+      const headers = parseCSVLine(lines[0]);
       const postRows: PostRow[] = [];
+
+      const idx = {
+        postId: headers.findIndex((h) => h.toLowerCase().includes("post id")),
+        username: headers.findIndex((h) => h.toLowerCase().includes("username")),
+        description: headers.findIndex((h) => h.toLowerCase().includes("description")),
+        duration: headers.findIndex((h) => h.toLowerCase().includes("duration")),
+        publishTime: headers.findIndex((h) => h.toLowerCase().includes("publish time")),
+        permalink: headers.findIndex((h) => h.toLowerCase().includes("permalink")),
+        postType: headers.findIndex((h) => h.toLowerCase().includes("post type")),
+        date: headers.findIndex((h) => h.toLowerCase() === "date"),
+        views: headers.findIndex((h) => h.toLowerCase() === "views"),
+        reach: headers.findIndex((h) => h.toLowerCase() === "reach"),
+        likes: headers.findIndex((h) => h.toLowerCase() === "likes"),
+        shares: headers.findIndex((h) => h.toLowerCase() === "shares"),
+        follows: headers.findIndex((h) => h.toLowerCase() === "follows"),
+        comments: headers.findIndex((h) => h.toLowerCase() === "comments"),
+        saves: headers.findIndex((h) => h.toLowerCase() === "saves"),
+      };
 
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVLine(lines[i]);
         if (cols.length < 8) continue;
 
-        const idx = {
-          postId: headers.findIndex((h) => h.toLowerCase().includes("post id")),
-          username: headers.findIndex((h) => h.toLowerCase().includes("username")),
-          description: headers.findIndex((h) => h.toLowerCase().includes("description")),
-          duration: headers.findIndex((h) => h.toLowerCase().includes("duration")),
-          publishTime: headers.findIndex((h) => h.toLowerCase().includes("publish time")),
-          permalink: headers.findIndex((h) => h.toLowerCase().includes("permalink")),
-          postType: headers.findIndex((h) => h.toLowerCase().includes("post type")),
-          date: headers.findIndex((h) => h.toLowerCase() === "date"),
-          views: headers.findIndex((h) => h.toLowerCase() === "views"),
-          reach: headers.findIndex((h) => h.toLowerCase() === "reach"),
-          likes: headers.findIndex((h) => h.toLowerCase() === "likes"),
-          shares: headers.findIndex((h) => h.toLowerCase() === "shares"),
-          follows: headers.findIndex((h) => h.toLowerCase() === "follows"),
-          comments: headers.findIndex((h) => h.toLowerCase() === "comments"),
-          saves: headers.findIndex((h) => h.toLowerCase() === "saves"),
-        };
-
-        // Only process rows with "Lifetime" date (not daily breakdown)
         const dateVal = idx.date >= 0 ? cols[idx.date] : "";
         if (dateVal !== "Lifetime") continue;
+
+        const username = idx.username >= 0 ? cols[idx.username] : "";
+        if (username && username !== "gorontalo.unite") continue;
 
         const permalink = idx.permalink >= 0 ? cols[idx.permalink] : "";
         if (!permalink) continue;
@@ -174,57 +203,50 @@ const csvLines = firstLine === "sep=," ? lines_raw.slice(1) : lines_raw;
 
       if (postRows.length > 0) {
         await prisma.postInsight.deleteMany({ where: { reportId } });
-        await prisma.postInsight.createMany({
-          data: postRows.map((p) => ({ ...p, reportId })),
-        });
+        await prisma.postInsight.createMany({ data: postRows.map((p) => ({ ...p, reportId })) });
         results.posts = postRows.length;
       }
+
+    // ── DAILY ──────────────────────────────────────────────────
     } else if (csvType === "daily") {
-      // Parse daily metrics CSV
-      // Expected: Date/Tanggal column + Primary/value column
-      const dailyRows: DailyRow[] = [];
+      // Structure: line[0]=metric name, line[1]=Date/Primary header, line[2+]=data
+      const metricName = parseCSVLine(lines[0])[0] ?? "";
+      const metricKey = getMetricKey(file.name, metricName);
 
-      // Determine metric type from filename or first header
-      const metricType = file.name.toLowerCase();
-      let metricKey: keyof Omit<DailyRow, "date"> = "views";
-      if (metricType.includes("reach")) metricKey = "reach";
-      else if (metricType.includes("interaction") || metricType.includes("interaksi")) metricKey = "interactions";
-      else if (metricType.includes("follow")) metricKey = "follows";
-      else if (metricType.includes("visit") || metricType.includes("profile")) metricKey = "profileVisits";
-      else if (metricType.includes("link") || metricType.includes("click")) metricKey = "linkClicks";
-      else if (metricType.includes("tayangan") || metricType.includes("view")) metricKey = "views";
-
-      const dateIdx = headers.findIndex((h) =>
+      const dataHeaders = parseCSVLine(lines[1]);
+      const dateIdx = dataHeaders.findIndex((h) =>
         h.toLowerCase().includes("date") || h.toLowerCase().includes("tanggal")
       );
-      const valueIdx = headers.findIndex((h) =>
+      const valueIdx = dataHeaders.findIndex((h) =>
         h.toLowerCase().includes("primary") || h.toLowerCase() === "value"
       );
 
-      if (dateIdx >= 0 && valueIdx >= 0) {
-        for (let i = 1; i < lines.length; i++) {
-          const cols = parseCSVLine(lines[i]);
-          if (cols.length < 2) continue;
-          const dateStr = cols[dateIdx];
-          const value = parseInt(cols[valueIdx]) || 0;
-          if (!dateStr) continue;
-          const d = new Date(dateStr);
-          if (isNaN(d.getTime())) continue;
-
-          dailyRows.push({
-            date: d,
-            views: 0,
-            reach: 0,
-            interactions: 0,
-            follows: 0,
-            profileVisits: 0,
-            linkClicks: 0,
-            [metricKey]: value,
-          });
-        }
+      if (dateIdx < 0 || valueIdx < 0) {
+        results.errors.push(`File "${file.name}": kolom Date/Primary tidak ditemukan`);
+        continue;
       }
 
-      // Upsert daily metrics
+      const dailyRows: DailyRow[] = [];
+      for (let i = 2; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length < 2) continue;
+        const dateStr = cols[dateIdx];
+        const value = parseInt(cols[valueIdx]) || 0;
+        if (!dateStr) continue;
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) continue;
+        dailyRows.push({
+          date: d,
+          views: 0,
+          reach: 0,
+          interactions: 0,
+          follows: 0,
+          profileVisits: 0,
+          linkClicks: 0,
+          [metricKey]: value,
+        });
+      }
+
       for (const row of dailyRows) {
         await prisma.dailyMetric.upsert({
           where: { reportId_date: { reportId, date: row.date } },
@@ -233,6 +255,97 @@ const csvLines = firstLine === "sep=," ? lines_raw.slice(1) : lines_raw;
         });
       }
       results.daily += dailyRows.length;
+
+    // ── AUDIENCE ───────────────────────────────────────────────
+    } else if (csvType === "audience") {
+      // Structure:
+      // "Age & gender"
+      // "",Women,Men
+      // 18-24,9.9,8.6
+      // ...
+      // "Top cities"
+      // city1,city2,...
+      // pct1,pct2,...
+
+      let section = "";
+      const ageData: Record<string, { women: number; men: number }> = {};
+      const cityNames: string[] = [];
+      const cityPcts: number[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        const rowLabel = cols[0]?.toLowerCase() ?? "";
+
+        if (rowLabel.includes("age & gender") || rowLabel.includes("age &amp; gender")) {
+          section = "age";
+          continue;
+        }
+        if (rowLabel.includes("top cities")) {
+          section = "cities";
+          continue;
+        }
+        if (rowLabel.includes("top countries")) {
+          section = "countries";
+          continue;
+        }
+
+        if (section === "age") {
+          if (rowLabel === "" || rowLabel.includes("women")) continue; // skip header row
+          const ageLabel = cols[0];
+          const women = parseFloat(cols[1] ?? "0") || 0;
+          const men = parseFloat(cols[2] ?? "0") || 0;
+          if (ageLabel) ageData[ageLabel] = { women, men };
+        }
+
+        if (section === "cities") {
+          if (cityNames.length === 0) {
+            // First row = city names
+            cols.forEach((c) => { if (c) cityNames.push(c); });
+          } else if (cityPcts.length === 0) {
+            // Second row = percentages
+            cols.forEach((c) => { cityPcts.push(parseFloat(c) || 0); });
+          }
+        }
+      }
+
+      // Calculate total women/men from age data
+      let totalWomen = 0;
+      let totalMen = 0;
+      Object.values(ageData).forEach(({ women, men }) => {
+        totalWomen += women;
+        totalMen += men;
+      });
+
+      const audiencePayload = {
+        genderWomen: totalWomen,
+        genderMen: totalMen,
+        age18to24: (ageData["18-24"]?.women ?? 0) + (ageData["18-24"]?.men ?? 0),
+        age25to34: (ageData["25-34"]?.women ?? 0) + (ageData["25-34"]?.men ?? 0),
+        age35to44: (ageData["35-44"]?.women ?? 0) + (ageData["35-44"]?.men ?? 0),
+        age45to54: (ageData["45-54"]?.women ?? 0) + (ageData["45-54"]?.men ?? 0),
+        age55to64: (ageData["55-64"]?.women ?? 0) + (ageData["55-64"]?.men ?? 0),
+        age65plus: (ageData["65+"]?.women ?? 0) + (ageData["65+"]?.men ?? 0),
+        age13to17: 0,
+        topCity1: cityNames[0] ?? null,
+        topCity1Pct: cityPcts[0] ?? 0,
+        topCity2: cityNames[1] ?? null,
+        topCity2Pct: cityPcts[1] ?? 0,
+        topCity3: cityNames[2] ?? null,
+        topCity3Pct: cityPcts[2] ?? 0,
+        topCity4: cityNames[3] ?? null,
+        topCity4Pct: cityPcts[3] ?? 0,
+        topCity5: cityNames[4] ?? null,
+        topCity5Pct: cityPcts[4] ?? 0,
+      };
+
+      await prisma.audienceData.upsert({
+        where: { reportId },
+        create: { ...audiencePayload, reportId },
+        update: audiencePayload,
+      });
+
+      results.audience = true;
+
     } else {
       results.errors.push(`File "${file.name}" tidak dikenali formatnya`);
     }
