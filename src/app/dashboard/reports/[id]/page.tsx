@@ -16,24 +16,5 @@ export default async function ReportDetailPage({
       contentStats: true,
       topContent: { orderBy: { rank: "asc" } },
       audienceData: true,
-    },
-  });
-
-  if (!report) notFound();
-
-  const serialized: ReportWithData = {
-    ...report,
-    periodStart: report.periodStart.toISOString(),
-    periodEnd: report.periodEnd.toISOString(),
-    createdAt: report.createdAt.toISOString(),
-    updatedAt: report.updatedAt.toISOString(),
-    topContent: report.topContent.map((tc) => ({
-      ...tc,
-      publishedAt: tc.publishedAt ? tc.publishedAt.toISOString() : null,
-    })),
-    dailyMetrics: [],
-    postInsights: [],
-  };
-
-  return <ReportView report={serialized} />;
-}
+      dailyMetrics: { orderBy: { date: "asc" } },
+      postInsights: { orderBy: { publishedAt: "desc" } },
