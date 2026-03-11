@@ -92,10 +92,25 @@ export async function POST(
   const results = { posts: 0, daily: 0, errors: [] as string[] };
 
   for (const file of files) {
-    const text = await file.text();
-    // Remove BOM if present
-    const cleanText = text.replace(/^\uFEFF/, "");
-    const lines = cleanText.split("\n").filter((l) => l.trim());
+    // Handle both UTF-8 and UTF-16 encodings
+const buffer = await file.arrayBuffer();
+const uint8 = new Uint8Array(buffer);
+
+// Detect UTF-16 by BOM (FF FE or FE FF)
+let cleanText: string;
+if ((uint8[0] === 0xff && uint8[1] === 0xfe) || (uint8[0] === 0xfe && uint8[1] === 0xff)) {
+  const decoder = new TextDecoder("utf-16");
+  cleanText = decoder.decode(buffer);
+} else {
+  const decoder = new TextDecoder("utf-8");
+  cleanText = decoder.decode(buffer).replace(/^\uFEFF/, "");
+}
+
+// Remove sep=, line if present (Business Suite adds this)
+const lines_raw = cleanText.split("\n").filter((l) => l.trim());
+const firstLine = lines_raw[0]?.trim().toLowerCase();
+const csvLines = firstLine === "sep=," ? lines_raw.slice(1) : lines_raw;
+    const lines = csvLines;
     if (lines.length < 2) continue;
 
     const headers = parseCSVLine(lines[0]);
