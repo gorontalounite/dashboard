@@ -189,21 +189,20 @@ export async function POST(
         }
 
         postRows.push({
-          postId: idx.postId >= 0 ? cols[idx.postId].replace(/"/g, "").trim() : "",
-          permalink,
-          caption: idx.description >= 0 ? cols[idx.description].replace(/"/g, "").trim().slice(0, 500) : "",
-          type: mapPostType(idx.postType >= 0 ? cols[idx.postType].replace(/"/g, "").trim() : ""),
-          publishedAt,
-          views: parseInt(cols[idx.views]?.replace(/"/g, "") ?? "0") || 0,
-          reach: parseInt(cols[idx.reach]?.replace(/"/g, "") ?? "0") || 0,
-          likes: parseInt(cols[idx.likes]?.replace(/"/g, "") ?? "0") || 0,
-          comments: parseInt(cols[idx.comments]?.replace(/"/g, "") ?? "0") || 0,
-          saves: parseInt(cols[idx.saves]?.replace(/"/g, "") ?? "0") || 0,
-          shares: parseInt(cols[idx.shares]?.replace(/"/g, "") ?? "0") || 0,
-          follows: parseInt(cols[idx.follows]?.replace(/"/g, "") ?? "0") || 0,
-          duration: parseInt(idx.duration >= 0 ? cols[idx.duration]?.replace(/"/g, "") ?? "0" : "0") || 0,
-        });
-      }
+  postId: idx.postId >= 0 ? cols[idx.postId].replace(/"/g, "").trim() : "",
+  permalink,
+  caption: idx.description >= 0 ? cols[idx.description].replace(/"/g, "").trim().slice(0, 500) : "",
+  type: mapPostType(idx.postType >= 0 ? cols[idx.postType].replace(/"/g, "").trim() : ""),
+  publishedAt,
+  views: idx.views >= 0 ? parseInt(cols[idx.views]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  reach: idx.reach >= 0 ? parseInt(cols[idx.reach]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  likes: idx.likes >= 0 ? parseInt(cols[idx.likes]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  comments: idx.comments >= 0 ? parseInt(cols[idx.comments]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  saves: idx.saves >= 0 ? parseInt(cols[idx.saves]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  shares: idx.shares >= 0 ? parseInt(cols[idx.shares]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  follows: idx.follows >= 0 ? parseInt(cols[idx.follows]?.replace(/"/g, "") ?? "0") || 0 : 0,
+  duration: idx.duration >= 0 ? parseInt(cols[idx.duration]?.replace(/"/g, "") ?? "0") || 0 : 0,
+});
 
       console.log(`Posts parsed: ${postRows.length}`);
 
