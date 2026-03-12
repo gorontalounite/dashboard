@@ -176,17 +176,17 @@ export async function POST(
         const dateVal = idx.date >= 0 ? cols[idx.date] : "";
         if (dateVal.replace(/"/g, "").trim() !== "Lifetime") continue;
 
-        const username = idx.username >= 0 ? cols[idx.username].replace(/"/g, "").trim() : "";
+        const username = idx.username >= 0 ? (cols[idx.username] ?? "").replace(/"/g, "").trim() : "";
         if (username && username !== "gorontalo.unite") continue;
 
-        const permalink = idx.permalink >= 0 ? cols[idx.permalink].replace(/"/g, "").trim() : "";
+        const permalink = idx.permalink >= 0 ? (cols[idx.permalink] ?? "").replace(/"/g, "").trim() : "";
         if (!permalink) continue;
 
         let publishedAt: Date | null = null;
         if (idx.publishTime >= 0 && cols[idx.publishTime]) {
-          const d = new Date(cols[idx.publishTime].replace(/"/g, "").trim());
-          if (!isNaN(d.getTime())) publishedAt = d;
-        }
+        const d = new Date(cols[idx.publishTime].replace(/"/g, "").trim());
+        if (!isNaN(d.getTime())) publishedAt = d;
+      }
 
         postRows.push({
         postId: idx.postId >= 0 ? cols[idx.postId].replace(/"/g, "").trim() : "",
