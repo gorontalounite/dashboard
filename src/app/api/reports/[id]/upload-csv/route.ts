@@ -142,7 +142,7 @@ export async function POST(
     if (lines.length < 2) continue;
 
     const csvType = detectType(lines);
-    console.log(`File: ${file.name}, Type: ${csvType}, First line: ${lines[0]?.slice(0, 80)}`);
+    console.log(`File: ${file.name}, Type: ${csvType}, Lines: ${lines.length}`);
 
     // ── POSTS ──────────────────────────────────────────────────
     if (csvType === "posts") {
@@ -150,26 +150,28 @@ export async function POST(
       const postRows: PostRow[] = [];
 
       const idx = {
-  postId: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("post id")),
-  username: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("account username")),
-  description: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("description")),
-  duration: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("duration")),
-  publishTime: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("publish time")),
-  permalink: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("permalink")),
-  postType: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("post type")),
-  date: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "date"),
-  views: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "views"),
-  reach: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "reach"),
-  likes: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "likes"),
-  shares: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "shares"),
-  follows: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "follows"),
-  comments: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "comments"),
-  saves: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "saves"),
-};
+        postId: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("post id")),
+        username: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("account username")),
+        description: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("description")),
+        duration: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("duration")),
+        publishTime: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("publish time")),
+        permalink: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("permalink")),
+        postType: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase().includes("post type")),
+        date: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "date"),
+        views: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "views"),
+        reach: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "reach"),
+        likes: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "likes"),
+        shares: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "shares"),
+        follows: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "follows"),
+        comments: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "comments"),
+        saves: headers.findIndex((h) => h.replace(/"/g, "").trim().toLowerCase() === "saves"),
+      };
+
+      console.log(`Posts idx - date:${idx.date} username:${idx.username} permalink:${idx.permalink} views:${idx.views}`);
 
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVLine(lines[i]);
-        if (cols.length < 8) continue;
+        if (cols.length < 5) continue;
 
         const dateVal = idx.date >= 0 ? cols[idx.date] : "";
         if (dateVal.replace(/"/g, "").trim() !== "Lifetime") continue;
@@ -177,31 +179,33 @@ export async function POST(
         const username = idx.username >= 0 ? cols[idx.username].replace(/"/g, "").trim() : "";
         if (username && username !== "gorontalo.unite") continue;
 
-        const permalink = idx.permalink >= 0 ? cols[idx.permalink] : "";
+        const permalink = idx.permalink >= 0 ? cols[idx.permalink].replace(/"/g, "").trim() : "";
         if (!permalink) continue;
 
         let publishedAt: Date | null = null;
         if (idx.publishTime >= 0 && cols[idx.publishTime]) {
-          const d = new Date(cols[idx.publishTime]);
+          const d = new Date(cols[idx.publishTime].replace(/"/g, "").trim());
           if (!isNaN(d.getTime())) publishedAt = d;
         }
 
         postRows.push({
-          postId: idx.postId >= 0 ? cols[idx.postId] : "",
+          postId: idx.postId >= 0 ? cols[idx.postId].replace(/"/g, "").trim() : "",
           permalink,
-          caption: idx.description >= 0 ? cols[idx.description].slice(0, 500) : "",
-          type: mapPostType(idx.postType >= 0 ? cols[idx.postType] : ""),
+          caption: idx.description >= 0 ? cols[idx.description].replace(/"/g, "").trim().slice(0, 500) : "",
+          type: mapPostType(idx.postType >= 0 ? cols[idx.postType].replace(/"/g, "").trim() : ""),
           publishedAt,
-          views: parseInt(cols[idx.views] ?? "0") || 0,
-          reach: parseInt(cols[idx.reach] ?? "0") || 0,
-          likes: parseInt(cols[idx.likes] ?? "0") || 0,
-          comments: parseInt(cols[idx.comments] ?? "0") || 0,
-          saves: parseInt(cols[idx.saves] ?? "0") || 0,
-          shares: parseInt(cols[idx.shares] ?? "0") || 0,
-          follows: parseInt(cols[idx.follows] ?? "0") || 0,
-          duration: parseInt(idx.duration >= 0 ? cols[idx.duration] ?? "0" : "0") || 0,
+          views: parseInt(cols[idx.views]?.replace(/"/g, "") ?? "0") || 0,
+          reach: parseInt(cols[idx.reach]?.replace(/"/g, "") ?? "0") || 0,
+          likes: parseInt(cols[idx.likes]?.replace(/"/g, "") ?? "0") || 0,
+          comments: parseInt(cols[idx.comments]?.replace(/"/g, "") ?? "0") || 0,
+          saves: parseInt(cols[idx.saves]?.replace(/"/g, "") ?? "0") || 0,
+          shares: parseInt(cols[idx.shares]?.replace(/"/g, "") ?? "0") || 0,
+          follows: parseInt(cols[idx.follows]?.replace(/"/g, "") ?? "0") || 0,
+          duration: parseInt(idx.duration >= 0 ? cols[idx.duration]?.replace(/"/g, "") ?? "0" : "0") || 0,
         });
       }
+
+      console.log(`Posts parsed: ${postRows.length}`);
 
       if (postRows.length > 0) {
         await prisma.postInsight.deleteMany({ where: { reportId } });
@@ -211,7 +215,6 @@ export async function POST(
 
     // ── DAILY ──────────────────────────────────────────────────
     } else if (csvType === "daily") {
-      // Structure: line[0]=metric name, line[1]=Date/Primary header, line[2+]=data
       const metricName = parseCSVLine(lines[0])[0] ?? "";
       const metricKey = getMetricKey(file.name, metricName);
 
@@ -232,8 +235,8 @@ export async function POST(
       for (let i = 2; i < lines.length; i++) {
         const cols = parseCSVLine(lines[i]);
         if (cols.length < 2) continue;
-        const dateStr = cols[dateIdx];
-        const value = parseInt(cols[valueIdx]) || 0;
+        const dateStr = cols[dateIdx].replace(/"/g, "").trim();
+        const value = parseInt(cols[valueIdx].replace(/"/g, "")) || 0;
         if (!dateStr) continue;
         const d = new Date(dateStr);
         if (isNaN(d.getTime())) continue;
@@ -260,15 +263,6 @@ export async function POST(
 
     // ── AUDIENCE ───────────────────────────────────────────────
     } else if (csvType === "audience") {
-      // Structure:
-      // "Age & gender"
-      // "",Women,Men
-      // 18-24,9.9,8.6
-      // ...
-      // "Top cities"
-      // city1,city2,...
-      // pct1,pct2,...
-
       let section = "";
       const ageData: Record<string, { women: number; men: number }> = {};
       const cityNames: string[] = [];
@@ -292,7 +286,7 @@ export async function POST(
         }
 
         if (section === "age") {
-          if (rowLabel === "" || rowLabel.includes("women")) continue; // skip header row
+          if (rowLabel === "" || rowLabel.includes("women")) continue;
           const ageLabel = cols[0];
           const women = parseFloat(cols[1] ?? "0") || 0;
           const men = parseFloat(cols[2] ?? "0") || 0;
@@ -301,16 +295,13 @@ export async function POST(
 
         if (section === "cities") {
           if (cityNames.length === 0) {
-            // First row = city names
             cols.forEach((c) => { if (c) cityNames.push(c); });
           } else if (cityPcts.length === 0) {
-            // Second row = percentages
             cols.forEach((c) => { cityPcts.push(parseFloat(c) || 0); });
           }
         }
       }
 
-      // Calculate total women/men from age data
       let totalWomen = 0;
       let totalMen = 0;
       Object.values(ageData).forEach(({ women, men }) => {
