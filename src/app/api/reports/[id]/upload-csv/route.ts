@@ -293,11 +293,14 @@ export async function POST(
           continue;
         }
         if (rowLabel.includes("top cities")) {
-          section = "cities";
-          continue;
-        }
+  section = "cities";
+  cityNames.length = 0;
+  cityPcts.length = 0;
+  continue;
+}
         if (rowLabel.includes("top countries")) {
-          section = "countries";
+          section = "countries"; // skip countries, wait for cities
+          cityNames.length = 0; // reset in case
           continue;
         }
 
