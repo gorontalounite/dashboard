@@ -56,7 +56,7 @@ export function ReportView({ report, isPublic = false }: Props) {
         </div>
         <div className="flex items-center gap-2">
           {!isPublic && (
-            
+            <a
               href={`/dashboard/reports/${report.id}/edit`}
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm px-4 py-2 rounded-xl transition-all"
             >
