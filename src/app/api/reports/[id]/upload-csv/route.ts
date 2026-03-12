@@ -77,8 +77,7 @@ function detectType(lines: string[]): CSVType {
     first.includes("content interactions") ||
     first.includes("instagram follows") ||
     first.includes("instagram profile visits") ||
-    first.includes("instagram link clicks") ||
-    first.includes("reach")
+    first.includes("instagram link clicks")
   ) return "daily";
   if (lines[1]) {
     const second = parseCSVLine(lines[1]).join(",").toLowerCase();
@@ -87,6 +86,8 @@ function detectType(lines: string[]): CSVType {
       (second.includes("primary") && second.includes("tanggal"))
     ) return "daily";
   }
+  const firstCols = parseCSVLine(lines[0]);
+  if (firstCols.length === 1) return "daily";
   return "unknown";
 }
 
