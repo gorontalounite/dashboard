@@ -50,7 +50,7 @@ export default async function ReportDetailPage({
       <ReportView report={serialized} />
       {report.dailyMetrics.length > 0 && (
         <div className="max-w-6xl mx-auto px-6 pb-8">
-          <DailyChart data={serialized.dailyMetrics} />
+          <DailyChart dailyMetrics={serialized.dailyMetrics} />
         </div>
       )}
       {report.postInsights.length > 0 && (
