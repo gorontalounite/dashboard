@@ -142,6 +142,7 @@ export async function POST(
     if (lines.length < 2) continue;
 
     const csvType = detectType(lines);
+    console.log(`File: ${file.name}, Type: ${csvType}, First line: ${lines[0]?.slice(0, 80)}`);
 
     // ── POSTS ──────────────────────────────────────────────────
     if (csvType === "posts") {
