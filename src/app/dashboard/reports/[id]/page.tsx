@@ -1,4 +1,3 @@
-cat > src/app/dashboard/reports/\[id\]/page.tsx << 'EOF'
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ReportView } from "@/components/ReportView";
@@ -62,4 +61,3 @@ export default async function ReportDetailPage({
     </div>
   );
 }
-EOF
