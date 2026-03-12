@@ -61,9 +61,25 @@ function decodeFile(buffer: ArrayBuffer): string {
 }
 
 function getLines(text: string): string[] {
-  const all = text.split("\n").map((l) => l.trim()).filter((l) => l);
-  if (all[0]?.toLowerCase() === "sep=,") return all.slice(1);
-  return all;
+  const lines: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      current += char;
+    } else if (char === "\n" && !inQuotes) {
+      const trimmed = current.replace(/\r$/, "").trim();
+      if (trimmed) lines.push(trimmed);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  if (current.trim()) lines.push(current.trim());
+  if (lines[0]?.toLowerCase() === "sep=,") return lines.slice(1);
+  return lines;
 }
 
 type CSVType = "posts" | "daily" | "audience" | "unknown";
