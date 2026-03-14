@@ -38,10 +38,34 @@ function PostCard({ post }: { post: PostInsightData }) {
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <svg className="w-10 h-10 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+          <div className={[
+            "w-full h-full flex flex-col items-center justify-center gap-2",
+            post.type === "REELS" ? "bg-gradient-to-br from-orange-500/20 to-pink-500/20" :
+            post.type === "STORIES" ? "bg-gradient-to-br from-pink-500/20 to-purple-500/20" :
+            post.type === "POSTS" ? "bg-gradient-to-br from-indigo-500/20 to-blue-500/20" :
+            "bg-gradient-to-br from-teal-500/20 to-cyan-500/20"
+          ].join(" ")}>
+            {post.type === "REELS" && (
+              <svg className="w-10 h-10 text-orange-400/60" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
+            {post.type === "STORIES" && (
+              <svg className="w-10 h-10 text-pink-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            )}
+            {post.type === "POSTS" && (
+              <svg className="w-10 h-10 text-indigo-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            )}
+            {post.type === "VIDEOS" && (
+              <svg className="w-10 h-10 text-teal-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            )}
+            <p className="text-white/20 text-xs">{post.type}</p>
           </div>
         )}
         {/* Type badge */}
