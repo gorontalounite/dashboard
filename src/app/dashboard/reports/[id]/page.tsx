@@ -42,13 +42,8 @@ export default async function ReportDetailPage({
 
   return (
     <div>
-      <ReportView report={serialized} />
-      {report.dailyMetrics.length > 0 && (
-        <div className="max-w-6xl mx-auto px-6 pt-4">
-          <DailySummary dailyMetrics={serialized.dailyMetrics} />
-        </div>
-      )}
-      {report.dailyMetrics.length > 0 && (
+      <ReportView report={serialized} dailyMetrics={serialized.dailyMetrics} />
+{report.dailyMetrics.length > 0 && (
         <div className="max-w-6xl mx-auto px-6 pb-8">
           <DailyChart dailyMetrics={serialized.dailyMetrics} />
         </div>

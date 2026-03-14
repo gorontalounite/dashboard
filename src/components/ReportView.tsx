@@ -4,13 +4,15 @@ import type { ReportWithData } from "@/types";
 import { StatCard } from "./StatCard";
 import { InteractionChart, AudienceAgeChart, GenderChart } from "./ReportCharts";
 import { formatNumber, formatDate } from "@/lib/utils";
+import { DailySummary } from "./DailySummary";
 
 interface Props {
   report: ReportWithData;
   isPublic?: boolean;
+  dailyMetrics?: { views: number; reach: number; interactions: number; linkClicks: number; profileVisits: number; follows: number }[];
 }
 
-export function ReportView({ report, isPublic = false }: Props) {
+export function ReportView({ report, isPublic = false, dailyMetrics = [] }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
   const m = report.metrics;
 
@@ -67,6 +69,7 @@ export function ReportView({ report, isPublic = false }: Props) {
       </div>
 
       <div ref={printRef} className="space-y-6">
+        <DailySummary dailyMetrics={dailyMetrics} />
         {isPublic && (
           <div className="glass rounded-2xl p-5 flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center">
