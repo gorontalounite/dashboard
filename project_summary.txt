@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reports   Report[]
+}
+
+model Report {
+  id           String        @id @default(cuid())
+  title        String
+  accountName  String
+  periodStart  DateTime
+  periodEnd    DateTime
+  shareToken   String        @unique @default(cuid())
+  isPublic     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       String
+  audienceData AudienceData?
+  contentStats ContentStat[]
+  dailyMetrics DailyMetric[]
+  metrics      Metrics?
+  postInsights PostInsight[]
+  createdBy    User          @relation(fields: [userId], references: [id])
+  topContent   TopContent[]
+}
+
+model Metrics {
+  id                       String @id @default(cuid())
+  reportId                 String @unique
+  views                    Int    @default(0)
+  viewsFromAds             Float  @default(0)
+  viewsFollowers           Float  @default(0)
+  viewsNonFollowers        Float  @default(0)
+  accountsReached          Int    @default(0)
+  accountsReachedChange    Float  @default(0)
+  interactions             Int    @default(0)
+  interactionsFromAds      Float  @default(0)
+  interactionsFollowers    Float  @default(0)
+  interactionsNonFollowers Float  @default(0)
+  likes                    Int    @default(0)
+  comments                 Int    @default(0)
+  saves                    Int    @default(0)
+  shares                   Int    @default(0)
+  reposts                  Int    @default(0)
+  profileVisits            Int    @default(0)
+  profileVisitsChange      Float  @default(0)
+  externalLinkTaps         Int    @default(0)
+  externalLinkTapsChange   Float  @default(0)
+  followsGained            Int    @default(0)
+  unfollows                Int    @default(0)
+  netFollowerGrowth        Int    @default(0)
+  report                   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model ContentStat {
+  id              String      @id @default(cuid())
+  reportId        String
+  type            ContentType
+  viewsPct        Float       @default(0)
+  interactionsPct Float       @default(0)
+  report          Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model TopContent {
+  id          String      @id @default(cuid())
+  reportId    String
+  type        ContentType
+  views       Int         @default(0)
+  publishedAt DateTime?
+  caption     String?
+  rank        Int         @default(0)
+  report      Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model AudienceData {
+  id          String  @id @default(cuid())
+  reportId    String  @unique
+  genderMen   Float   @default(0)
+  genderWomen Float   @default(0)
+  age13to17   Float   @default(0)
+  age18to24   Float   @default(0)
+  age25to34   Float   @default(0)
+  age35to44   Float   @default(0)
+  age45to54   Float   @default(0)
+  age55to64   Float   @default(0)
+  age65plus   Float   @default(0)
+  topCity1    String?
+  topCity1Pct Float   @default(0)
+  topCity2    String?
+  topCity2Pct Float   @default(0)
+  topCity3    String?
+  topCity3Pct Float   @default(0)
+  topCity4    String?
+  topCity4Pct Float   @default(0)
+  topCity5    String?
+  topCity5Pct Float   @default(0)
+  report      Report  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model DailyMetric {
+  id            String   @id @default(cuid())
+  reportId      String
+  date          DateTime
+  views         Int      @default(0)
+  reach         Int      @default(0)
+  interactions  Int      @default(0)
+  follows       Int      @default(0)
+  profileVisits Int      @default(0)
+  linkClicks    Int      @default(0)
+  report        Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, date])
+}
+
+model PostInsight {
+  id          String      @id @default(cuid())
+  reportId    String
+  postId      String?
+  permalink   String?
+  caption     String?
+  type        ContentType @default(REELS)
+  publishedAt DateTime?
+  views       Int         @default(0)
+  reach       Int         @default(0)
+  likes       Int         @default(0)
+  comments    Int         @default(0)
+  saves       Int         @default(0)
+  shares      Int         @default(0)
+  follows     Int         @default(0)
+  duration    Int         @default(0)
+  report      Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+enum ContentType {
+  REELS
+  STORIES
+  POSTS
+  VIDEOS
+}
+{
+  "name": "gorontalo-unite-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.7.2",
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
+    "next": "^16.1.6",
+    "next-auth": "^4.24.10",
+    "next-themes": "^0.4.6",
+    "react": "^18",
+    "react-dom": "^18",
+    "recharts": "^2.13.3",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/uuid": "^10.0.0",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./providers";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Gorontalo Unite · Social Media Dashboard",
+  description: "Instagram Insight Dashboard for Gorontalo Unite",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="id" className={`${inter.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
+      <body className="bg-[#0a0a0f] text-white antialiased">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+// src/app/page.tsx
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  if (session) {
+    redirect("/dashboard");
+  } else {
+    redirect("/login");
+  }
+}

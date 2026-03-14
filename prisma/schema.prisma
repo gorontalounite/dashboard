@@ -31,60 +31,25 @@ model Report {
   updatedAt    DateTime      @updatedAt
   userId       String
   audienceData AudienceData?
-  contentStats ContentStat[]
   dailyMetrics DailyMetric[]
   metrics      Metrics?
   postInsights PostInsight[]
   createdBy    User          @relation(fields: [userId], references: [id])
-  topContent   TopContent[]
 }
 
 model Metrics {
-  id                       String @id @default(cuid())
-  reportId                 String @unique
-  views                    Int    @default(0)
-  viewsFromAds             Float  @default(0)
-  viewsFollowers           Float  @default(0)
-  viewsNonFollowers        Float  @default(0)
-  accountsReached          Int    @default(0)
-  accountsReachedChange    Float  @default(0)
-  interactions             Int    @default(0)
-  interactionsFromAds      Float  @default(0)
-  interactionsFollowers    Float  @default(0)
-  interactionsNonFollowers Float  @default(0)
-  likes                    Int    @default(0)
-  comments                 Int    @default(0)
-  saves                    Int    @default(0)
-  shares                   Int    @default(0)
-  reposts                  Int    @default(0)
-  profileVisits            Int    @default(0)
-  profileVisitsChange      Float  @default(0)
-  externalLinkTaps         Int    @default(0)
-  externalLinkTapsChange   Float  @default(0)
-  followsGained            Int    @default(0)
-  unfollows                Int    @default(0)
-  netFollowerGrowth        Int    @default(0)
-  report                   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
-}
-
-model ContentStat {
-  id              String      @id @default(cuid())
-  reportId        String
-  type            ContentType
-  viewsPct        Float       @default(0)
-  interactionsPct Float       @default(0)
-  report          Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
-}
-
-model TopContent {
-  id          String      @id @default(cuid())
-  reportId    String
-  type        ContentType
-  views       Int         @default(0)
-  publishedAt DateTime?
-  caption     String?
-  rank        Int         @default(0)
-  report      Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  id            String @id @default(cuid())
+  reportId      String @unique
+  views         Int    @default(0)
+  accountsReached Int  @default(0)
+  interactions  Int    @default(0)
+  likes         Int    @default(0)
+  comments      Int    @default(0)
+  saves         Int    @default(0)
+  shares        Int    @default(0)
+  followsGained Int    @default(0)
+  profileVisits Int    @default(0)
+  report        Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
 
 model AudienceData {

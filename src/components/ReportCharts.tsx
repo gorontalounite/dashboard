@@ -60,36 +60,6 @@ function CustomTooltip({ active, payload, label, colors }: {
   return null;
 }
 
-export function ContentTypeChart({ report }: Props) {
-  const colors = useChartColors();
-  const data = report.contentStats.map((cs) => ({
-    name: cs.type.charAt(0) + cs.type.slice(1).toLowerCase(),
-    value: cs.viewsPct,
-  }));
-
-  return (
-    <div className="glass rounded-2xl p-6">
-      <h3 className="font-display font-semibold text-white mb-1">Views by Content Type</h3>
-      <p className="text-white/40 text-xs mb-6">Distribusi views per jenis konten</p>
-      <ResponsiveContainer width="100%" height={220}>
-        <PieChart>
-          <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value">
-            {data.map((_, index) => (
-              <Cell key={index} fill={COLORS_CONTENT[index % COLORS_CONTENT.length]} stroke="transparent" />
-            ))}
-          </Pie>
-          <Tooltip content={(props) => <CustomTooltip {...props} colors={colors} />} />
-          <Legend
-            formatter={(value) => <span style={{ color: colors.legendColor }} className="text-xs">{value}</span>}
-            iconType="circle"
-            iconSize={8}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
 export function InteractionChart({ report }: Props) {
   const colors = useChartColors();
   const m = report.metrics;
@@ -97,7 +67,6 @@ export function InteractionChart({ report }: Props) {
 
   const data = [
     { name: "Likes", value: m.likes },
-    { name: "Reposts", value: m.reposts },
     { name: "Shares", value: m.shares },
     { name: "Saves", value: m.saves },
     { name: "Comments", value: m.comments },
@@ -106,7 +75,7 @@ export function InteractionChart({ report }: Props) {
   return (
     <div className="glass rounded-2xl p-6">
       <h3 className="font-display font-semibold text-white mb-1">Breakdown Interaksi</h3>
-      <p className="text-white/40 text-xs mb-6">Reels interactions</p>
+      <p className="text-white/40 text-xs mb-6">Distribusi interaksi</p>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20 }}>
           <XAxis type="number" tick={{ fill: colors.subtleLabelColor, fontSize: 11 }} axisLine={false} tickLine={false} />

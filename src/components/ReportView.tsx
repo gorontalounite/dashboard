@@ -1,10 +1,9 @@
-// src/components/ReportView.tsx
 "use client";
 import { useRef } from "react";
 import type { ReportWithData } from "@/types";
 import { StatCard } from "./StatCard";
-import { ContentTypeChart, InteractionChart, AudienceAgeChart, GenderChart } from "./ReportCharts";
-import { formatNumber, formatDate, formatPercent } from "@/lib/utils";
+import { InteractionChart, AudienceAgeChart, GenderChart } from "./ReportCharts";
+import { formatNumber, formatDate } from "@/lib/utils";
 
 interface Props {
   report: ReportWithData;
@@ -18,51 +17,43 @@ export function ReportView({ report, isPublic = false }: Props) {
   async function handleExportPDF() {
     const { default: jsPDF } = await import("jspdf");
     const { default: html2canvas } = await import("html2canvas");
-
     if (!printRef.current) return;
-
     const canvas = await html2canvas(printRef.current, {
       scale: 2,
       backgroundColor: "#0a0a0f",
       useCORS: true,
     });
-
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
     let position = 0;
     const pageHeight = pdf.internal.pageSize.getHeight();
-
     while (position < pdfHeight) {
       pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, pdfHeight);
       position += pageHeight;
       if (position < pdfHeight) pdf.addPage();
     }
-
-    pdf.save(`${report.accountName}-${report.title}.pdf`);
+    pdf.save(report.accountName + "-" + report.title + ".pdf");
   }
+
+  const editHref = "/dashboard/reports/" + report.id + "/edit";
 
   return (
     <div>
-      {/* Header actions */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">{report.title}</h1>
           <p className="text-white/40 text-sm mt-1">
-            @{report.accountName} · {formatDate(report.periodStart)} – {formatDate(report.periodEnd)}
+            {"@"}{report.accountName}{" · "}{formatDate(report.periodStart)}{" – "}{formatDate(report.periodEnd)}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {!isPublic && (
             <a
-              href={`/dashboard/reports/${report.id}/edit`}
+              href={editHref}
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm px-4 py-2 rounded-xl transition-all"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
               Edit
             </a>
           )}
@@ -70,24 +61,16 @@ export function ReportView({ report, isPublic = false }: Props) {
             onClick={handleExportPDF}
             className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm px-4 py-2 rounded-xl transition-all"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
             Export PDF
           </button>
         </div>
       </div>
 
-      {/* Printable area */}
       <div ref={printRef} className="space-y-6">
-
-        {/* Branding for public */}
         {isPublic && (
           <div className="glass rounded-2xl p-5 flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" />
-              </svg>
+              <span className="text-white font-bold text-sm">GU</span>
             </div>
             <div>
               <p className="font-display font-bold text-white">Gorontalo Unite · Social Media Report</p>
@@ -96,57 +79,26 @@ export function ReportView({ report, isPublic = false }: Props) {
           </div>
         )}
 
-        {/* Key Metrics */}
         {m && (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard label="Total Views" value={m.views} accent="orange" />
-            <StatCard label="Accounts Reached" value={m.accountsReached} change={m.accountsReachedChange} accent="pink" />
+            <StatCard label="Accounts Reached" value={m.accountsReached} accent="pink" />
             <StatCard label="Interactions" value={m.interactions} accent="blue" />
-            <StatCard label="Profile Visits" value={m.profileVisits} change={m.profileVisitsChange} accent="green" />
+            <StatCard label="Profile Visits" value={m.profileVisits} accent="green" />
           </div>
         )}
 
-        {/* Views breakdown */}
         {m && (
           <div className="glass rounded-2xl p-6">
-            <h3 className="font-display font-semibold text-white mb-4">Views Breakdown</h3>
+            <h3 className="font-display font-semibold text-white mb-4">Detail Engagement</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "Dari Followers", val: m.viewsFollowers, suffix: "%" },
-                { label: "Dari Non-followers", val: m.viewsNonFollowers, suffix: "%" },
-                { label: "Dari Iklan", val: m.viewsFromAds, suffix: "%" },
-                { label: "Follows Gained", val: m.followsGained },
-              ].map((item) => (
-                <div key={item.label} className="bg-white/3 rounded-xl p-4">
-                  <p className="text-white/40 text-xs uppercase tracking-wider mb-2">{item.label}</p>
-                  <p className="font-display text-xl font-bold text-white">
-                    {item.suffix ? `${item.val}${item.suffix}` : formatNumber(item.val)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Charts row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ContentTypeChart report={report} />
-          <InteractionChart report={report} />
-        </div>
-
-        {/* Engagement details */}
-        {m && (
-          <div className="glass rounded-2xl p-6">
-            <h3 className="font-display font-semibold text-white mb-4">Detail Engagement (Reels)</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
               {[
                 { label: "Likes", val: m.likes },
                 { label: "Comments", val: m.comments },
                 { label: "Saves", val: m.saves },
                 { label: "Shares", val: m.shares },
-                { label: "Reposts", val: m.reposts },
               ].map((item) => (
-                <div key={item.label} className="text-center">
+                <div key={item.label} className="text-center bg-white/3 rounded-xl p-4">
                   <p className="font-display text-2xl font-bold text-white">{formatNumber(item.val)}</p>
                   <p className="text-white/40 text-xs mt-1">{item.label}</p>
                 </div>
@@ -155,7 +107,24 @@ export function ReportView({ report, isPublic = false }: Props) {
           </div>
         )}
 
-        {/* Audience charts */}
+        {m && (
+          <div className="glass rounded-2xl p-6">
+            <h3 className="font-display font-semibold text-white mb-4">Follower Growth</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center bg-white/3 rounded-xl p-4">
+                <p className="font-display text-2xl font-bold text-emerald-400">{"+"+formatNumber(m.followsGained)}</p>
+                <p className="text-white/40 text-xs mt-1">New Follows</p>
+              </div>
+              <div className="text-center bg-white/3 rounded-xl p-4">
+                <p className="font-display text-2xl font-bold text-white">{formatNumber(m.profileVisits)}</p>
+                <p className="text-white/40 text-xs mt-1">Profile Visits</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {m && <InteractionChart report={report} />}
+
         {report.audienceData && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AudienceAgeChart report={report} />
@@ -163,7 +132,6 @@ export function ReportView({ report, isPublic = false }: Props) {
           </div>
         )}
 
-        {/* Top Cities */}
         {report.audienceData && (
           <div className="glass rounded-2xl p-6">
             <h3 className="font-display font-semibold text-white mb-4">Top Locations</h3>
@@ -180,80 +148,17 @@ export function ReportView({ report, isPublic = false }: Props) {
                   <div className="flex-1">
                     <div className="flex justify-between mb-1">
                       <span className="text-white text-sm">{item.city}</span>
-                      <span className="text-white/50 text-sm">{item.pct}%</span>
+                      <span className="text-white/50 text-sm">{item.pct}{"%"}</span>
                     </div>
                     <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-orange-500 to-pink-500 rounded-full"
-                        style={{ width: `${item.pct}%` }}
+                        style={{ width: item.pct + "%" }}
                       />
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* Top Content */}
-        {report.topContent.length > 0 && (
-          <div className="glass rounded-2xl p-6">
-            <h3 className="font-display font-semibold text-white mb-4">Top Content</h3>
-            <div className="space-y-3">
-              {report.topContent.map((tc) => (
-                <div key={tc.id} className="flex items-center gap-4 bg-white/3 rounded-xl p-4">
-                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-orange-400 text-xs font-bold">#{tc.rank}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm truncate">{tc.caption || "(no caption)"}</p>
-                    <p className="text-white/40 text-xs mt-0.5">
-                      {tc.type} · {tc.publishedAt ? formatDate(tc.publishedAt) : "—"}
-                    </p>
-                  </div>
-                  <p className="text-white font-display font-bold flex-shrink-0">{formatNumber(tc.views)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Follower growth */}
-        {m && (
-          <div className="glass rounded-2xl p-6">
-            <h3 className="font-display font-semibold text-white mb-4">Follower Growth</h3>
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { label: "New Follows", val: m.followsGained, color: "text-emerald-400" },
-                { label: "Unfollows", val: m.unfollows, color: "text-red-400" },
-                { label: "Net Growth", val: m.netFollowerGrowth, color: m.netFollowerGrowth >= 0 ? "text-emerald-400" : "text-red-400" },
-              ].map((item) => (
-                <div key={item.label} className="text-center bg-white/3 rounded-xl p-4">
-                  <p className={`font-display text-2xl font-bold ${item.color}`}>
-                    {item.val > 0 ? "+" : ""}{formatNumber(item.val)}
-                  </p>
-                  <p className="text-white/40 text-xs mt-1">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Profile activity */}
-        {m && (
-          <div className="glass rounded-2xl p-6">
-            <h3 className="font-display font-semibold text-white mb-4">Profile Activity</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/3 rounded-xl p-4">
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-2">Profile Visits</p>
-                <p className="font-display text-2xl font-bold text-white">{formatNumber(m.profileVisits)}</p>
-                <p className="text-xs mt-1 text-white/30">{formatPercent(m.profileVisitsChange)} vs sebelumnya</p>
-              </div>
-              <div className="bg-white/3 rounded-xl p-4">
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-2">External Link Taps</p>
-                <p className="font-display text-2xl font-bold text-white">{formatNumber(m.externalLinkTaps)}</p>
-                <p className="text-xs mt-1 text-white/30">{formatPercent(m.externalLinkTapsChange)} vs sebelumnya</p>
-              </div>
             </div>
           </div>
         )}

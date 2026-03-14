@@ -15,8 +15,6 @@ export default async function ReportDetailPage({
     where: { id },
     include: {
       metrics: true,
-      contentStats: true,
-      topContent: { orderBy: { rank: "asc" } },
       audienceData: true,
       dailyMetrics: { orderBy: { date: "asc" } },
       postInsights: { orderBy: { publishedAt: "desc" } },
@@ -31,10 +29,6 @@ export default async function ReportDetailPage({
     periodEnd: report.periodEnd.toISOString(),
     createdAt: report.createdAt.toISOString(),
     updatedAt: report.updatedAt.toISOString(),
-    topContent: report.topContent.map((tc) => ({
-      ...tc,
-      publishedAt: tc.publishedAt ? tc.publishedAt.toISOString() : null,
-    })),
     dailyMetrics: report.dailyMetrics.map((d) => ({
       ...d,
       date: d.date.toISOString(),

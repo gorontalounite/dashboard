@@ -160,7 +160,6 @@ export default function ComparePage() {
                   { label: "Shares", key: "shares" as const },
                   { label: "Profile Visits", key: "profileVisits" as const },
                   { label: "Follows Gained", key: "followsGained" as const },
-                  { label: "Net Growth", key: "netFollowerGrowth" as const },
                 ].map((row) => (
                   <tr key={row.key} className="border-b border-white/3 hover:bg-white/2 transition-colors">
                     <td className="text-white/60 py-3 pr-6">{row.label}</td>

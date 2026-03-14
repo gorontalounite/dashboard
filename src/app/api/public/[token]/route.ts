@@ -11,9 +11,9 @@ export async function GET(
     where: { shareToken: token },
     include: {
       metrics: true,
-      contentStats: true,
-      topContent: { orderBy: { rank: "asc" } },
       audienceData: true,
+      dailyMetrics: { orderBy: { date: "asc" } },
+      postInsights: { orderBy: { publishedAt: "desc" } },
     },
   });
 
