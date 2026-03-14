@@ -28,16 +28,16 @@ export default async function DashboardPage({ searchParams }: Props) {
     orderBy: { periodStart: "desc" },
     take: 10,
     include: {
-      metrics: {
-        select: { views: true, interactions: true, accountsReached: true },
+      dailyMetrics: {
+        select: { views: true, reach: true, interactions: true },
       },
     },
   });
 
   const totalReports = await prisma.report.count({ where: whereClause });
-  const totalViews = reports.reduce((acc, r) => acc + (r.metrics?.views ?? 0), 0);
-  const totalInteractions = reports.reduce((acc, r) => acc + (r.metrics?.interactions ?? 0), 0);
-  const totalReached = reports.reduce((acc, r) => acc + (r.metrics?.accountsReached ?? 0), 0);
+  const totalViews = reports.reduce((acc, r) => acc + r.dailyMetrics.reduce((s, d) => s + d.views, 0), 0);
+  const totalInteractions = reports.reduce((acc, r) => acc + r.dailyMetrics.reduce((s, d) => s + d.interactions, 0), 0);
+  const totalReached = reports.reduce((acc, r) => acc + r.dailyMetrics.reduce((s, d) => s + d.reach, 0), 0);
 
   const allReports = await prisma.report.findMany({
     orderBy: { periodStart: "desc" },
@@ -105,13 +105,11 @@ export default async function DashboardPage({ searchParams }: Props) {
     periodStart: r.periodStart.toISOString(),
     periodEnd: r.periodEnd.toISOString(),
     isPublic: r.isPublic,
-    metrics: r.metrics
-      ? {
-          views: r.metrics.views,
-          interactions: r.metrics.interactions,
-          accountsReached: r.metrics.accountsReached,
-        }
-      : null,
+    metrics: {
+      views: r.dailyMetrics.reduce((s, d) => s + d.views, 0),
+      interactions: r.dailyMetrics.reduce((s, d) => s + d.interactions, 0),
+      accountsReached: r.dailyMetrics.reduce((s, d) => s + d.reach, 0),
+    },
   }));
 
   const serializedAllReports = allReports.map((r) => ({
