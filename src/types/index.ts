@@ -112,4 +112,25 @@ export interface PostInsightData {
   follows: number;
   duration: number;
   thumbnailUrl?: string | null;
+  viewsFollowersPct?: number | null;
+  viewsNonFollowersPct?: number | null;
+  reposts?: number | null;
+  skipRate?: number | null;
+  avgSkipRate?: number | null;
+  watchTime?: string | null;
+  avgWatchTime?: string | null;
+  sourceReelsTab?: number | null;
+  sourceFeed?: number | null;
+  sourceStories?: number | null;
+  sourceExplore?: number | null;
+  sourceProfile?: number | null;
+  sourceOther?: number | null;
+  sourceFromHome?: number | null;
+  sourceFromProfile?: number | null;
+  sourceFromOther?: number | null;
+  impressions?: number | null;
+  tapsForward?: number | null;
+  tapsBack?: number | null;
+  exits?: number | null;
+  replies?: number | null;
 }

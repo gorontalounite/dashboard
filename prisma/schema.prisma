@@ -108,7 +108,37 @@ model PostInsight {
   shares      Int         @default(0)
   follows     Int         @default(0)
   duration    Int         @default(0)
-  thumbnailUrl String?
+  thumbnailUrl        String?
+
+  // Semua tipe
+  viewsFollowersPct    Float?
+  viewsNonFollowersPct Float?
+  reposts              Int?
+
+  // REELS
+  skipRate             Float?
+  avgSkipRate          Float?
+  watchTime            String?
+  avgWatchTime         String?
+  sourceReelsTab       Float?
+  sourceFeed           Float?
+  sourceStories        Float?
+  sourceExplore        Float?
+  sourceProfile        Float?
+  sourceOther          Float?
+
+  // POSTS & CAROUSEL
+  sourceFromHome       Float?
+  sourceFromProfile    Float?
+  sourceFromOther      Float?
+
+  // STORIES
+  impressions          Int?
+  tapsForward          Int?
+  tapsBack             Int?
+  exits                Int?
+  replies              Int?
+
   report      Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
 
