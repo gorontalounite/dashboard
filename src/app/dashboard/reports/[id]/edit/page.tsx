@@ -53,5 +53,9 @@ export default async function ReportDetailPage({
         </div>
       )}
     </div>
+
+      <div className="mt-6">
+        <UploadCSV reportId={id} />
+      </div>
   );
 }
