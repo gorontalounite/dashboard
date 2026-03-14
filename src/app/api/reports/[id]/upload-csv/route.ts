@@ -299,8 +299,7 @@ export async function POST(
           continue;
         }
         if (rowLabel.includes("top countries")) {
-          section = "countries"; // skip countries, wait for cities
-          cityNames.length = 0; // reset in case
+          section = "countries";
           continue;
         }
 
