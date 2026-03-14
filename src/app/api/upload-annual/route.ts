@@ -36,12 +36,20 @@ function parseDate(dateStr: string): Date | null {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  console.log("Session user:", JSON.stringify(session.user));
 
   const formData = await req.formData();
   const file = formData.get("file") as File;
   if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
 
-  const text = await file.text();
+  let text = "";
+  try {
+    text = await file.text();
+    console.log("File size:", text.length);
+  } catch (e) {
+    console.error("File read error:", e);
+    return NextResponse.json({ error: "Gagal membaca file" }, { status: 400 });
+  }
   const lines = text.split("\n").filter((l) => l.trim());
   if (lines.length < 2) return NextResponse.json({ error: "Empty file" }, { status: 400 });
 
@@ -207,5 +215,6 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  console.log("Results:", results.length);
   return NextResponse.json({ success: true, results });
 }
