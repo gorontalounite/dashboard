@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { PostInsightData } from "@/types";
 import { formatNumber } from "@/lib/utils";
 
@@ -8,16 +8,8 @@ interface Props {
 }
 
 function PostCard({ post }: { post: PostInsightData }) {
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    if (!post.permalink) return;
-    fetch(`/api/thumbnail?url=${encodeURIComponent(post.permalink)}`)
-      .then((r) => r.json())
-      .then((data) => { if (data.thumbnail) setThumbnail(data.thumbnail); })
-      .catch(() => {});
-  }, [post.permalink]);
+  const thumbnail = post.thumbnailUrl ?? "";
 
   const typeColors: Record<string, string> = {
     REELS: "bg-orange-500/20 text-orange-400",

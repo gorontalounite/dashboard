@@ -111,4 +111,5 @@ export interface PostInsightData {
   shares: number;
   follows: number;
   duration: number;
+  thumbnailUrl?: string | null;
 }

@@ -108,6 +108,7 @@ model PostInsight {
   shares      Int         @default(0)
   follows     Int         @default(0)
   duration    Int         @default(0)
+  thumbnailUrl String?
   report      Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
 
