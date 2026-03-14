@@ -61,7 +61,7 @@ export function DailyChart({ dailyMetrics }: Props) {
   }
 
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="glass rounded-2xl p-6 mt-4">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h3 className="font-display font-semibold text-white">Tren Harian</h3>
