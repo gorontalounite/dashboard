@@ -87,7 +87,7 @@ type CSVType = "posts" | "daily" | "audience" | "unknown";
 function detectType(lines: string[]): CSVType {
   const first = parseCSVLine(lines[0]).join(",").toLowerCase();
   if (first.includes("post id") || first.includes("permalink")) return "posts";
-  if (first.includes("age & gender") || first.includes("age &amp; gender")) return "audience";
+  if (first.includes("age & gender") || first.includes("age &amp; gender") || first.includes("top cities")) return "audience";
   if (
     first.includes("tayangan") ||
     first.includes("content interactions") ||
@@ -293,11 +293,11 @@ export async function POST(
           continue;
         }
         if (rowLabel.includes("top cities")) {
-  section = "cities";
-  cityNames.length = 0;
-  cityPcts.length = 0;
-  continue;
-}
+          section = "cities";
+          cityNames.length = 0;
+          cityPcts.length = 0;
+          continue;
+        }
         if (rowLabel.includes("top countries")) {
           section = "countries"; // skip countries, wait for cities
           cityNames.length = 0; // reset in case
