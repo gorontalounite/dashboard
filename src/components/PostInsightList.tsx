@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { PostInsightData } from "@/types";
 import { formatNumber } from "@/lib/utils";
 
@@ -7,14 +7,17 @@ interface Props {
   posts: PostInsightData[];
 }
 
-function getInstagramThumbnail(permalink: string): string {
-  if (!permalink) return "";
-  return `https://api.microlink.io?url=${encodeURIComponent(permalink)}&embed=image.url`;
-}
-
 function PostCard({ post }: { post: PostInsightData }) {
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
-  const thumbnail = post.permalink ? getInstagramThumbnail(post.permalink) : "";
+
+  useEffect(() => {
+    if (!post.permalink) return;
+    fetch(`/api/thumbnail?url=${encodeURIComponent(post.permalink)}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.thumbnail) setThumbnail(data.thumbnail); })
+      .catch(() => {});
+  }, [post.permalink]);
 
   const typeColors: Record<string, string> = {
     REELS: "bg-orange-500/20 text-orange-400",
@@ -25,7 +28,6 @@ function PostCard({ post }: { post: PostInsightData }) {
 
   return (
     <div className="glass rounded-2xl overflow-hidden flex flex-col">
-      {/* Thumbnail */}
       <div className="relative bg-white/5 aspect-square overflow-hidden">
         {thumbnail && !imgError ? (
           <img
@@ -65,34 +67,26 @@ function PostCard({ post }: { post: PostInsightData }) {
             <p className="text-white/20 text-xs">{post.type}</p>
           </div>
         )}
-        {/* Type badge */}
         <div className="absolute top-2 left-2">
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeColors[post.type] ?? "bg-white/10 text-white/50"}`}>
             {post.type}
           </span>
         </div>
-        {/* Views overlay */}
         <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1">
           <p className="text-white text-xs font-bold">{formatNumber(post.views)}</p>
           <p className="text-white/50 text-[10px]">views</p>
         </div>
       </div>
 
-      {/* Info */}
       <div className="p-4 flex-1 flex flex-col gap-3">
-        {/* Caption */}
         {post.caption && (
           <p className="text-white/60 text-xs line-clamp-2 leading-relaxed">{post.caption}</p>
         )}
-
-        {/* Date */}
         {post.publishedAt && (
           <p className="text-white/30 text-xs">
             {new Date(post.publishedAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
           </p>
         )}
-
-        {/* Stats grid */}
         <div className="grid grid-cols-3 gap-2">
           {[
             { label: "Reach", value: post.reach },
@@ -108,8 +102,6 @@ function PostCard({ post }: { post: PostInsightData }) {
             </div>
           ))}
         </div>
-
-        {/* Link */}
         {post.permalink && (
           <a
             href={post.permalink}
@@ -140,14 +132,12 @@ export function PostInsightList({ posts }: Props) {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h3 className="font-display font-semibold text-white">Per Postingan</h3>
           <p className="text-white/40 text-xs mt-0.5">{posts.length} konten · dari Business Suite</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Filter type */}
           <div className="flex gap-1">
             {(["ALL", "REELS", "POSTS", "STORIES"] as const).map((t) => (
               <button
@@ -163,7 +153,6 @@ export function PostInsightList({ posts }: Props) {
               </button>
             ))}
           </div>
-          {/* Sort */}
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -175,8 +164,6 @@ export function PostInsightList({ posts }: Props) {
           </select>
         </div>
       </div>
-
-      {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {filtered.map((post) => (
           <PostCard key={post.id} post={post} />
