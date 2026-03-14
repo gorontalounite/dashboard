@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import type { PostInsightData } from "@/types";
 import { formatNumber } from "@/lib/utils";
 
@@ -52,7 +53,7 @@ function PostCard({ post }: { post: PostInsightData }) {
     : "0";
 
   return (
-    <div className="glass rounded-2xl overflow-hidden flex flex-col hover:bg-white/5 transition-all">
+    <Link href={"/dashboard/posts/" + post.id} className="glass rounded-2xl overflow-hidden flex flex-col hover:bg-white/8 hover:scale-[1.02] transition-all cursor-pointer">
       {/* Header visual area */}
       <div className={`relative bg-gradient-to-br ${config.gradient} p-5 flex flex-col gap-3`}>
         {/* Type + Date row */}
@@ -124,7 +125,7 @@ function PostCard({ post }: { post: PostInsightData }) {
           </a>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
 
