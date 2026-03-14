@@ -314,9 +314,17 @@ export async function POST(
 
         if (section === "cities") {
           if (cityNames.length === 0) {
-            cols.forEach((c) => { if (c) cityNames.push(c); });
+            const parsed = parseCSVLine(lines[i]);
+            parsed.forEach((c) => {
+              const clean = c.replace(/^"|"$/g, "").trim();
+              if (clean) cityNames.push(clean);
+            });
           } else if (cityPcts.length === 0) {
-            cols.forEach((c) => { cityPcts.push(parseFloat(c) || 0); });
+            const parsed = parseCSVLine(lines[i]);
+            parsed.forEach((c) => {
+              const val = parseFloat(c.replace(/"/g, "").trim());
+              if (!isNaN(val)) cityPcts.push(val);
+            });
           }
         }
       }
