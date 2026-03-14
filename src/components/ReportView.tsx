@@ -92,7 +92,7 @@ export function ReportView({ report, isPublic = false, dailyMetrics = [] }: Prop
         )}
 
         {m && (
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 mb-6">
             <h3 className="font-display font-semibold text-white mb-4">Detail Engagement</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
