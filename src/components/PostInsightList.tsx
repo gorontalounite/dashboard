@@ -8,11 +8,8 @@ interface Props {
 }
 
 function getInstagramThumbnail(permalink: string): string {
-  // Extract shortcode from permalink
-  const match = permalink.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
-  if (!match) return "";
-  const shortcode = match[2];
-  return `https://www.instagram.com/p/${shortcode}/media/?size=m`;
+  if (!permalink) return "";
+  return `https://api.microlink.io?url=${encodeURIComponent(permalink)}&embed=image.url`;
 }
 
 function PostCard({ post }: { post: PostInsightData }) {
