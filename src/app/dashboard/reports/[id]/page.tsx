@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ReportView } from "@/components/ReportView";
 import { DailyChart } from "@/components/DailyChart";
 import { PostInsightList } from "@/components/PostInsightList";
+import { DailySummary } from "@/components/DailySummary";
 import type { ReportWithData } from "@/types";
 
 export default async function ReportDetailPage({
@@ -42,6 +43,11 @@ export default async function ReportDetailPage({
   return (
     <div>
       <ReportView report={serialized} />
+      {report.dailyMetrics.length > 0 && (
+        <div className="max-w-6xl mx-auto px-6 pt-4">
+          <DailySummary dailyMetrics={serialized.dailyMetrics} />
+        </div>
+      )}
       {report.dailyMetrics.length > 0 && (
         <div className="max-w-6xl mx-auto px-6 pb-8">
           <DailyChart dailyMetrics={serialized.dailyMetrics} />
