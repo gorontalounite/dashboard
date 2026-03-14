@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { PostDetailActions } from "@/components/PostDetailClient";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { formatNumber } from "@/lib/utils";
@@ -53,16 +54,18 @@ export default async function PostDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Back button */}
+      <div className="flex items-center justify-between mb-6">
       <Link
         href={"/dashboard/reports/" + post.reportId}
-        className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 text-sm transition-colors"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
         Kembali ke Report
       </Link>
+      <PostDetailActions postId={post.id} />
+      </div>
 
       {/* Header Card */}
       <div className={"glass rounded-2xl overflow-hidden mb-6"}>
